@@ -92,43 +92,26 @@ const TourDetails = () => {
   const destinationList = destData?.destinations || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
-      {/* Hero Section */}
-      <div className="relative h-[60vh] w-full overflow-hidden">
-        <div className="absolute inset-0">
-          <motion.div
-            animate={{ scale: 1.05 }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              repeatType: "reverse",
-            }}
-            style={{ backgroundImage: `url(${photo})` }}
-            className="w-full h-full bg-center bg-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-transparent" />
-        </div>
-
-        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col justify-center items-center h-full pt-16">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center"
-            >
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                {title}
-              </h1>
-              <div className="flex flex-wrap justify-center gap-6 mb-8">
-                <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white">
-                  <span className="font-semibold">Duration: </span>
-                  <span className="text-amber-200">{days} Days</span>
-                </div>
-                <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white">
-                  <span className="font-semibold">Destinations: </span>
-                  <span className="text-amber-200">
-                    {destinations?.length || 0}
+    <section className="py-8">
+      <div className="container mx-auto">
+        <div className="flex flex-wrap">
+          <div className="w-full lg:w-8/12">
+            <div className="tour__content bg-white shadow-md rounded-md p-6">
+              {photo && (
+                <img
+                  src={photo}
+                  alt={title}
+                  className="w-full h-80 object-cover rounded-md mb-6"
+                />
+              )}
+              <div className="tour__info">
+                <h2 className="text-2xl font-bold mb-4">{title}</h2>
+                <div className="flex flex-wrap gap-4 mb-4">
+                  <span className="text-sm font-medium text-gray-600">
+                    <strong>Days:</strong> {days}
+                  </span>
+                  <span className="text-sm font-medium text-gray-600">
+                    <strong>Destinations:</strong> {destinations?.length -1 || 0}
                   </span>
                 </div>
               </div>

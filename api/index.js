@@ -29,11 +29,27 @@ const __dirname = path.resolve();
 
 const app = express();
 
-app.use(cors({ origin: "http://localhost:5173" }));
-app.use(cors({ origin: "http://localhost:3000" }));
-app.use(cors({ origin: "https://lh3.googleusercontent.com" }));
+// CORS configuration for local development and Vercel deployment
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://lh3.googleusercontent.com",
+  process.env.FRONTEND_URL // Add your Vercel frontend URL in environment variables
+];
 
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '20mb' }));
 app.use(cookieParser());
 
@@ -64,6 +80,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000!");
-});
+// For Vercel serverless deployment
+export default app;
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}!`);
+  });
+}

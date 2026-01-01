@@ -1,7 +1,21 @@
-/* eslint-disable react/prop-types */
+// Basic function for removing HTML tags (for other text fields)
+const stripHtmlTags = (text) => {
+  if (!text) return '';
+  
+  return String(text)
+    .replace(/<[^>]*>/g, '')       // Remove HTML tags
+    .replace(/&lt;/g, '')
+    .replace(/&gt;/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')          // Normalize whitespace
+    .trim();                       // Trim extra whitespace
+};/* eslint-disable react/prop-types */
 
-import { Page, Text, View, Document, StyleSheet ,Image } from '@react-pdf/renderer';
-import logo from '../../images/logo_t.png';
+import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
+import logo from '../../images/logo.png';
 
 const styles = StyleSheet.create({
   page: {
@@ -126,8 +140,62 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   }
 });
+
+// Helper function to convert HTML to plain text using DOM parser
+const htmlToText = (html) => {
+  if (!html) return '';
+  
+  // For server-side rendering (Node.js environment)
+  if (typeof document === 'undefined') {
+    // Simple fallback if running server-side
+    return String(html)
+      .replace(/<[^>]+>/g, '') // Strip HTML tags
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&#39;/g, "'")
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  
+  try {
+    // For client-side rendering (browser environment)
+    // Create a temporary DOM element
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // Get the text content
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    // Clean up weird characters and extra spaces
+    return textContent
+      .replace(/\u00A0/g, ' ') // Replace non-breaking spaces
+      .replace(/[\u2018\u2019]/g, "'") // Replace smart quotes
+      .replace(/[\u201C\u201D]/g, '"') // Replace smart double quotes
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+  } catch (error) {
+    // Fallback in case of error
+    return String(html)
+      .replace(/<[^>]+>/g, '')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&#39;/g, "'")
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+};
+
 const TourPDFDocument = ({ tour, destinationList, bookingData }) => {
-  const { title, days, destinations, desc  } = tour || {};
+  const { title, days, destinations } = tour || {};
+  
+  // Use the HTML to text converter for the description
+  const cleanDescription = htmlToText(tour?.desc || '');
   
   const idStrings = Array.isArray(destinations)
     ? destinations.map((item) => item._id)
@@ -179,10 +247,10 @@ const TourPDFDocument = ({ tour, destinationList, bookingData }) => {
 
   const renderTimelineDay = (destination, index, totalDestinations, isLastOnPage) => {
     const travelRoute = index === 0
-      ? `Airport → ${destination.destinationName}`
+      ? `Airport - ${destination.destinationName}`
       : index === totalDestinations - 1
-      ? `${destination.destinationName} → Airport`
-      : `${timelineDestinations[index - 1]?.destinationName || 'Previous Location'} → ${destination.destinationName}`;
+      ? `${destination.destinationName} - Airport`
+      : `${timelineDestinations[index - 1]?.destinationName || 'Previous Location'} - ${destination.destinationName}`;
 
     return (
       <View 
@@ -203,7 +271,7 @@ const TourPDFDocument = ({ tour, destinationList, bookingData }) => {
             {destination.activities && destination.activities.length > 0 ? (
               destination.activities.map((activity, idx) => (
                 <Text key={idx} style={styles.activityItem}>
-                  • {activity}
+                  • {htmlToText(activity)}
                 </Text>
               ))
             ) : (
@@ -223,15 +291,13 @@ const TourPDFDocument = ({ tour, destinationList, bookingData }) => {
       <Page size="A4" style={styles.page} wrap={true}>
         {/* Title and Basic Info Section */}
         <View style={styles.header}>
-        
-    <View style={styles.logoContainer}>
-      <Image
-        src={logo}
-        style={styles.logo}
-      />
-    </View>
-  
-          <Text style={styles.title}>{title}</Text>
+          <View style={styles.logoContainer}>
+            <Image
+              src={logo}
+              style={styles.logo}
+            />
+          </View>
+          <Text style={styles.title}>{htmlToText(title)}</Text>
           
           <View style={styles.infoGrid}>
             <View style={styles.infoItem}>
@@ -243,7 +309,7 @@ const TourPDFDocument = ({ tour, destinationList, bookingData }) => {
             <View style={styles.infoItem}>
               <Text style={styles.text}>
                 <Text style={styles.boldText}>Destinations: </Text>
-                {timelineDestinations.length || 0} locations
+                {timelineDestinations.length -1 || 0} locations
               </Text>
             </View>
           </View>
@@ -306,7 +372,7 @@ const TourPDFDocument = ({ tour, destinationList, bookingData }) => {
             {bookingData.preferences && (
               <View style={{ marginTop: 10 }}>
                 <Text style={styles.boldText}>Special Requests:</Text>
-                <Text style={styles.text}>{bookingData.preferences}</Text>
+                <Text style={styles.text}>{htmlToText(bookingData.preferences)}</Text>
               </View>
             )}
           </View>
@@ -315,7 +381,10 @@ const TourPDFDocument = ({ tour, destinationList, bookingData }) => {
         {/* Description Section */}
         <View style={styles.descriptionSection}>
           <Text style={styles.subtitle}>Tour Description</Text>
-          <Text style={styles.text}>{desc}</Text>
+          <Text style={styles.text}>
+            {/* Apply a direct text-only rendering approach */}
+            {cleanDescription || "Tour description not available."}
+          </Text>
         </View>
 
         {/* First page timeline */}

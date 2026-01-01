@@ -72,7 +72,7 @@ export const sendTourEmail = async (req, res) => {
           <div style="background-color: #F9FAFB; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <h3 style="color: #374151; margin-top: 0;">Tour Overview</h3>
             <p>Duration: ${tour.days} days</p>
-            <p>Destinations: ${tour.destinations?.length || 0} locations</p>
+            <p>Destinations: ${tour.destinations?.length -1 || 0} locations</p>
             ${
               bookingData
                 ? `
