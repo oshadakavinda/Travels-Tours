@@ -114,12 +114,10 @@ const TourDetails = () => {
                     <strong>Destinations:</strong> {destinations?.length -1 || 0}
                   </span>
                 </div>
-                </div>
               </div>
+            </div>
 
-              {/* Main Content */}
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="bg-white rounded-xl shadow-lg -mt-32 relative z-10 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-lg mt-6 relative z-10 overflow-hidden">
           <div className="flex flex-col xl:flex-row">
             {/* Tour Content Section */}
             <motion.div
@@ -278,7 +276,11 @@ const TourDetails = () => {
             </motion.div>
           </div>
         </div>
+          </div>
+        </div>
+      </div>
 
+      <div className="container mx-auto px-4">
         {/* Call to Action */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
