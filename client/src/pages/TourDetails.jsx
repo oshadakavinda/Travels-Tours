@@ -114,15 +114,11 @@ const TourDetails = () => {
                     <strong>Destinations:</strong> {destinations?.length -1 || 0}
                   </span>
                 </div>
+                </div>
               </div>
-            </motion.div>
-          </div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-amber-50 to-transparent"></div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+              {/* Main Content */}
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="bg-white rounded-xl shadow-lg -mt-32 relative z-10 overflow-hidden">
           <div className="flex flex-col xl:flex-row">
             {/* Tour Content Section */}
@@ -313,8 +309,9 @@ const TourDetails = () => {
           </div>
         </motion.div>
       </div>
-    </div>
+    </section>
   );
+
 };
 
 export default TourDetails;
