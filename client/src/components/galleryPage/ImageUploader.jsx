@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { app } from "../../firebase"; // Correct path to Firebase config
+import { uploadToCloudinary } from "../../utils/cloudinary";
 import { Alert, FileInput } from "flowbite-react"; // Ensure this package is installed
 import { CircularProgressbar } from "react-circular-progressbar"; // You'll need to install this: npm install react-circular-progressbar
 import "react-circular-progressbar/dist/styles.css";
@@ -10,33 +9,21 @@ function ImageUploader({ setImageURL, label, id, imageURL }) {
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
-      const storage = getStorage(app);
-      const fileName = new Date().getTime() + "-" + selectedFile.name;
-      const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, selectedFile);
-
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setImageUploadProgress(progress.toFixed(0));
-        },
-        (error) => {
-          setImageUploadError("Image uploading failed!");
-          setImageUploadProgress(null);
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            setImageUploadProgress(null);
-            setImageUploadError(null);
-            setImageURL(downloadURL);
-          });
-        }
-      );
+      setImageUploadError(null);
+      try {
+        const downloadURL = await uploadToCloudinary(selectedFile, (progress) => {
+          setImageUploadProgress(progress);
+        });
+        setImageUploadProgress(null);
+        setImageURL(downloadURL);
+      } catch (err) {
+        setImageUploadError("Image uploading failed: " + err.message);
+        setImageUploadProgress(null);
+      }
     }
   };
 

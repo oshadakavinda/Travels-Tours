@@ -3,8 +3,7 @@
 import { useSelector } from 'react-redux';
 import { Alert, Button, TextInput, Modal} from 'flowbite-react';
 import { useEffect, useRef, useState } from 'react';
-import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
-import { app } from '../firebase';
+import { uploadToCloudinary } from '../utils/cloudinary';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { updateStart,updateSuccess,updateFailure,deleteUserFailure,
@@ -53,53 +52,23 @@ export default function DashProfile() {
   }, [imageFile]);
 
   const uploadImage = async () => {
-    /*
-      service firebase.storage {
-        match /b/{bucket}/o {
-          match /{allPaths=**} {
-            allow read;
-            allow write: if
-            request.resource.size < 2*1024*1024 &&
-            request.resource.contentType.matches('image/.*')
-          }
-        }
-      }
-    */
-
-    // console.log("uploading image........")
     setImageFileUploading(true);
     setImageFileUploadError(null);
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + imageFile.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, imageFile);
-
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setImageFileUploadProgress(progress.toFixed(0));
-      },
-      // eslint-disable-next-line no-unused-vars
-      (error) => {
-        setImageFileUploadError("Couldn't upload. File must be less than 2 MB");
-        setImageFileUrl(currentUser.profilePicture); // Reset to current profile picture
+    try {
+      const downloadURL = await uploadToCloudinary(imageFile, (progress) => {
+        setImageFileUploadProgress(progress);
+      });
+      setImageFileUrl(downloadURL);
+      setFormData({ ...formData, profilePicture: downloadURL });
+      setImageFileUploading(false);
+      setImageFileUploadProgress(null);
+    } catch (error) {
+      setImageFileUploadError("Couldn't upload image: " + error.message);
+      setImageFileUrl(currentUser.profilePicture);
       setImageFileUploadProgress(null);
       setImageFile(null);
-      setImageFileUrl(null);
       setImageFileUploading(false);
-      },
-
-      
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setImageFileUrl(downloadURL);
-          setFormData({...formData, profilePicture: downloadURL});
-          setImageFileUploading(false);
-        });
-        setImageFileUploadProgress(null);
-      }
-    );
+    }
   };
 
   const handleChange = (e) => {

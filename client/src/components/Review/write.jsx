@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from 'firebase/storage';
-import { app } from '../../firebase';
+import { uploadToCloudinary } from '../../utils/cloudinary';
 
 // StarRating Component
 const StarRating = ({ rating, setRating }) => {
@@ -49,31 +43,8 @@ const WriteReview = ({ onCancel, onReviewSubmitted }) => {
   const { currentUser } = useSelector((state) => state.user);
 
   const handleImageUpload = async (file) => {
-    return new Promise((resolve, reject) => {
-      const storage = getStorage(app);
-      const fileName = new Date().getTime() + file.name;
-      const storageRef = ref(storage, `reviews/${fileName}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setUploadProgress(Math.round(progress));
-        },
-        (error) => {
-          reject(error);
-        },
-        async () => {
-          try {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            resolve(downloadURL);
-          } catch (error) {
-            reject(error);
-          }
-        }
-      );
+    return uploadToCloudinary(file, (progress) => {
+      setUploadProgress(progress);
     });
   };
 

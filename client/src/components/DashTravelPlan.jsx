@@ -12,17 +12,10 @@ import {
   FileInput,
 } from "flowbite-react";
 import ReactQuill from "react-quill";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
 import "react-quill/dist/quill.snow.css";
-import { app } from "../firebase";
+import { useNavigate } from "react-router-dom";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { useNavigate } from "react-router-dom";
 
 export default function DashTravelPlan() {
   const { currentUser } = useSelector((state) => state.user);

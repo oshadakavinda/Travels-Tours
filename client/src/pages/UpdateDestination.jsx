@@ -1,14 +1,8 @@
 import { useState, useEffect } from "react";
 import { Alert, Button, TextInput, FileInput } from "flowbite-react";
 import ReactQuill from "react-quill";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
+import { uploadToCloudinary } from "../utils/cloudinary";
 import "react-quill/dist/quill.snow.css";
-import { app } from "../firebase";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { useNavigate, useParams } from "react-router-dom";
@@ -118,39 +112,22 @@ export default function UpdateDestination() {
             <FileInput
               type="file"
               accept="image/*"
-              onChange={(e) => {
+              onChange={async (e) => {
                 const selectedFile = e.target.files[0];
                 if (selectedFile) {
                   setFile(selectedFile);
-                  const storage = getStorage(app);
-                  const fileName = new Date().getTime() + "-" + selectedFile.name;
-                  const storageRef = ref(storage, fileName);
-                  const uploadTask = uploadBytesResumable(
-                    storageRef,
-                    selectedFile
-                  );
-
-                  uploadTask.on(
-                    "state_changed",
-                    (snapshot) => {
-                      const progress =
-                        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                      setImageUploadProgress(progress.toFixed(0));
-                    },
-                    (error) => {
-                      setImageUploadError("Image uploading failed!");
-                      setImageUploadProgress(null);
-                    },
-                    () => {
-                      getDownloadURL(uploadTask.snapshot.ref).then(
-                        (downloadURL) => {
-                          setImageUploadProgress(null);
-                          setImageUploadError(null);
-                          setFormData({ ...formData, destImage: downloadURL });
-                        }
-                      );
-                    }
-                  );
+                  setImageUploadError(null);
+                  try {
+                    const downloadURL = await uploadToCloudinary(
+                      selectedFile,
+                      (progress) => setImageUploadProgress(progress)
+                    );
+                    setImageUploadProgress(null);
+                    setFormData({ ...formData, destImage: downloadURL });
+                  } catch (err) {
+                    setImageUploadError("Image uploading failed: " + err.message);
+                    setImageUploadProgress(null);
+                  }
                 }
               }}
             />
@@ -198,34 +175,24 @@ export default function UpdateDestination() {
                 type="file"
                 accept="image/*"
                 disabled={formData.additionalImages.length >= 5}
-                onChange={(e) => {
+                onChange={async (e) => {
                   const selectedFile = e.target.files[0];
                   if (selectedFile && formData.additionalImages.length < 5) {
-                    const storage = getStorage(app);
-                    const fileName = new Date().getTime() + "-" + selectedFile.name;
-                    const storageRef = ref(storage, fileName);
-                    const uploadTask = uploadBytesResumable(storageRef, selectedFile);
-
-                    uploadTask.on(
-                      "state_changed",
-                      (snapshot) => {
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        setAdditionalImageUploadProgress(progress.toFixed(0));
-                      },
-                      (error) => {
-                        setImageUploadError("Upload failed!");
-                        setAdditionalImageUploadProgress(null);
-                      },
-                      () => {
-                        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                          setAdditionalImageUploadProgress(null);
-                          setFormData({
-                            ...formData,
-                            additionalImages: [...formData.additionalImages, downloadURL],
-                          });
-                        });
-                      }
-                    );
+                    setImageUploadError(null);
+                    try {
+                      const downloadURL = await uploadToCloudinary(
+                        selectedFile,
+                        (progress) => setAdditionalImageUploadProgress(progress)
+                      );
+                      setAdditionalImageUploadProgress(null);
+                      setFormData({
+                        ...formData,
+                        additionalImages: [...formData.additionalImages, downloadURL],
+                      });
+                    } catch (err) {
+                      setImageUploadError("Upload failed: " + err.message);
+                      setAdditionalImageUploadProgress(null);
+                    }
                   }
                 }}
               />

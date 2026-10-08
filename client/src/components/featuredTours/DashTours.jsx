@@ -13,13 +13,7 @@ import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { app } from "../../firebase";
+import { uploadToCloudinary } from "../../utils/cloudinary";
 import Waypoint from "../shared/waypoint";
 import ReactQuill from "react-quill";
 
@@ -190,44 +184,25 @@ export default function DashTours() {
                 <FileInput
                   type="file"
                   accept="image/*"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const selectedFile = e.target.files[0];
                     if (selectedFile) {
                       setFile(selectedFile);
-                      const storage = getStorage(app);
-                      const fileName =
-                        new Date().getTime() + "-" + selectedFile.name;
-                      const storageRef = ref(storage, fileName);
-                      const uploadTask = uploadBytesResumable(
-                        storageRef,
-                        selectedFile
-                      );
-
-                      uploadTask.on(
-                        "state_changed",
-                        (snapshot) => {
-                          const progress =
-                            (snapshot.bytesTransferred / snapshot.totalBytes) *
-                            100;
-                          setImageUploadProgress(progress.toFixed(0));
-                        },
-                        (error) => {
-                          setImageUploadError("Image uploading failed!");
-                          setImageUploadProgress(null);
-                        },
-                        () => {
-                          getDownloadURL(uploadTask.snapshot.ref).then(
-                            (downloadURL) => {
-                              setImageUploadProgress(null);
-                              setImageUploadError(null);
-                              setFormData({
-                                ...formData,
-                                photo: downloadURL,
-                              });
-                            }
-                          );
-                        }
-                      );
+                      setImageUploadError(null);
+                      try {
+                        const downloadURL = await uploadToCloudinary(
+                          selectedFile,
+                          (progress) => setImageUploadProgress(progress)
+                        );
+                        setImageUploadProgress(null);
+                        setFormData({
+                          ...formData,
+                          photo: downloadURL,
+                        });
+                      } catch (err) {
+                        setImageUploadError("Image uploading failed: " + err.message);
+                        setImageUploadProgress(null);
+                      }
                     }
                   }}
                 />
