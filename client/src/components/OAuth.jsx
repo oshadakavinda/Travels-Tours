@@ -9,12 +9,17 @@ import { signInSuccess } from "../redux/user/userSlice";
 import { useNavigate } from "react-router-dom";
 
 export default function OAuth() {
-
-    const auth = getAuth(app)
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const handleGoogleClick = async () => {
+        if (!app) {
+            console.warn("Google Sign-In is disabled: VITE_FIREBASE_API_KEY is not configured.");
+            alert("Google Sign-In is temporarily unavailable. Please sign in with email and password.");
+            return;
+        }
+
+        const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
     
