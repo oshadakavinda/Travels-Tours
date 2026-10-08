@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "../images/logo.png";
 
 const Footer = () => {
   const year = new Date().getFullYear();
@@ -10,7 +11,7 @@ const Footer = () => {
           {/* Logo and Tagline */}
           <div className="flex flex-col">
             <img
-              src="https://firebasestorage.googleapis.com/v0/b/renuka-travels.appspot.com/o/Renuka%20Logo.png?alt=media&token=1e056f28-2bbd-4818-b0d3-54d2def3557d"
+              src={logo}
               alt="Renuka Tours & Travels"
               className="w-32 mb-4"
             />

@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import logo from "../images/logo.png";
 
 export default function About() {
   return (
@@ -20,7 +21,7 @@ export default function About() {
             className="mb-8"
           >
             <img
-              src="https://firebasestorage.googleapis.com/v0/b/renuka-travels.appspot.com/o/Renuka%20Logo.png?alt=media&token=1e056f28-2bbd-4818-b0d3-54d2def3557d"
+              src={logo}
               alt="Renuka Tours and Travels Logo"
               className="h-24 md:h-32 mx-auto mb-4 drop-shadow-lg"
             />

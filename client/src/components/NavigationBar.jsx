@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { signoutSuccess } from "../redux/user/userSlice";
 import "../index.css";
+import logo from "../images/logo.png";
 
 export default function NavigationBar() {
   const commonStyles = {
@@ -94,8 +95,8 @@ export default function NavigationBar() {
               <Link to="/">
                 <img
                   className="h-12 w-auto"
-                  src="https://firebasestorage.googleapis.com/v0/b/renuka-travels.appspot.com/o/Renuka%20Logo.png?alt=media&token=1e056f28-2bbd-4818-b0d3-54d2def3557d"
-                  alt="Company Logo"
+                  src={logo}
+                  alt="Renuka Tours & Travels"
                 />
               </Link>
             </div>
