@@ -17,40 +17,66 @@ import bookingRoutes from "./routes/booking.route.js";
 
 dotenv.config();
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB is connected!");
-  })
-  .catch((err) => {
-    console.error("Failed to connect to MongoDB:", err);
+let isConnected = false;
+const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
+  if (!process.env.MONGO_URI) {
+    throw new Error("MONGO_URI environment variable is not defined in Vercel settings!");
+  }
+  await mongoose.connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000,
   });
+  console.log("MongoDB is connected!");
+};
+
+connectDB().catch((err) => console.error("Initial MongoDB connection error:", err.message));
+
 const __dirname = path.resolve();
 
 const app = express();
 
-// CORS configuration for local development and Vercel deployment
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "https://lh3.googleusercontent.com",
-  process.env.FRONTEND_URL // Add your Vercel frontend URL in environment variables
 ];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
-app.use(express.json({ limit: '20mb' }));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app") ||
+        origin.includes("localhost")
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  })
+);
+
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("Database connection middleware error:", err.message);
+    return res.status(500).json({
+      success: false,
+      message: "Database connection failed: " + err.message,
+    });
+  }
+});
+
+app.use(express.json({ limit: "20mb" }));
 app.use(cookieParser());
 
 app.use("/api/user", userRoutes);
