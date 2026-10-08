@@ -11,15 +11,15 @@ import {
 
 const router = express.Router();
 
-// Existing routes...
+// Destination routes with trailing slash tolerance
 router.post("/create-dest", verifyToken, createDest);
-router.get("/get-dest", getDestinations);
-router.get("/get-dest-names", getDestinationNames);
+router.get(["/get-dest", "/get-dest/"], getDestinations);
+router.get(["/get-dest-names", "/get-dest-names/"], getDestinationNames);
 
 router.delete("/delete-dest/:destId", verifyToken, deleteDestination);
 router.put("/update-dest/:destId", verifyToken, UpdateDestination);
 
-// New route to get destination details by slug
-router.get("/get-dest-details", getDestinationDetails); // Add this line
+// Route to get destination details by slug
+router.get(["/get-dest-details", "/get-dest-details/"], getDestinationDetails);
 
 export default router;

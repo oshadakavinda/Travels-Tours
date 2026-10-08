@@ -144,7 +144,7 @@ export default function CustomizeForm() {
   useEffect(() => {
     const fetchDestinations = async () => {
       try {
-        const response = await fetch(`api/destination/get-dest-names`);
+        const response = await fetch(`/api/destination/get-dest-names`);
         const data = await response.json();
         setDestinations(data.destinations || []);
       } catch (error) {

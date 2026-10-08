@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BsChevronCompactLeft, BsChevronCompactRight } from "react-icons/bs";
-import { AiOutlineClose } from "react-icons/ai";
 import welcomeImg from "../images/welcomeImage.jpg";
 import logoT from "../images/logo_t.png";
 
 export default function DestinationHome() {
-  const { destSlug } = useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [destination, setDestination] = useState(null);
+  const [destinations, setDestinations] = useState([]);
   const [destinationNames, setDestinationNames] = useState([]);
   const navigate = useNavigate();
 
@@ -18,41 +15,31 @@ export default function DestinationHome() {
     const fetchDestinations = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/destination/get-dest/?slug=${destSlug}`);
+        const res = await fetch(`/api/destination/get-dest`);
         const data = await res.json();
         if (!res.ok) {
           setError(true);
           setLoading(false);
           return;
         }
-        setDestination(data.destinations[0]);
+        if (data.destinations) {
+          setDestinations(data.destinations);
+          const names = data.destinations.map((destination) => ({
+            name: destination.destinationName,
+            slug: destination.slug,
+            image: destination.destImage,
+          }));
+          setDestinationNames(names);
+        }
         setLoading(false);
         setError(false);
       } catch (error) {
+        console.error("Error fetching destinations:", error.message);
         setError(true);
         setLoading(false);
       }
     };
     fetchDestinations();
-  }, [destSlug]);
-
-  useEffect(() => {
-    const fetchDestinationNames = async () => {
-      try {
-        const res = await fetch(`/api/destination/get-dest`);
-        const data = await res.json();
-        if (res.ok) {
-          const names = data.destinations.map((destination) => ({
-            name: destination.destinationName,
-            slug: destination.slug,
-          }));
-          setDestinationNames(names);
-        }
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
-    fetchDestinationNames();
   }, []);
 
   if (loading) {
@@ -225,9 +212,53 @@ export default function DestinationHome() {
           </div>
         </div>
 
-        {/* Image Slider */}
-        {destination?.additionalImages?.length > 0 && (
-          <ImageSlider slides={destination.additionalImages} />
+        {/* Featured Destinations Grid */}
+        {destinations.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-8 text-center">
+              Popular Destinations Across Sri Lanka
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {destinations.slice(0, 6).map((dest, idx) => (
+                <motion.div
+                  key={dest._id || idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: idx * 0.08 }}
+                  viewport={{ once: true }}
+                  onClick={() => navigate(`/destinations/${dest.slug}`)}
+                  className="group cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 flex flex-col"
+                >
+                  <div className="relative h-48 overflow-hidden bg-gray-100">
+                    <img
+                      src={dest.destImage || welcomeImg}
+                      alt={dest.destinationName}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = welcomeImg;
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                    <h3 className="absolute bottom-3 left-4 text-xl font-bold text-white drop-shadow">
+                      {dest.destinationName}
+                    </h3>
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <p className="text-gray-600 text-sm line-clamp-2 mb-4">
+                      {dest.shortDescription ||
+                        (dest.description
+                          ? dest.description.replace(/<[^>]+>/g, "").slice(0, 110) + "..."
+                          : "Explore this incredible destination in Sri Lanka.")}
+                    </p>
+                    <span className="text-amber-500 font-semibold text-sm inline-flex items-center group-hover:translate-x-1 transition-transform">
+                      Explore Destination &rarr;
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         )}
         
         {/* Call to Action */}

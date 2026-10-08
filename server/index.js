@@ -90,6 +90,15 @@ app.use("/api/review", reviewRoutes);
 app.use("/api/trip-plan", tripPlanRoutes);
 app.use("/api/bookings", bookingRoutes);
 
+// Catch unhandled API routes
+app.all("/api/*", (req, res) => {
+  res.status(404).json({
+    success: false,
+    statusCode: 404,
+    message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
 app.use(express.static(path.join(__dirname, "/client/dist")));
 
 app.get("*", (req, res) => {

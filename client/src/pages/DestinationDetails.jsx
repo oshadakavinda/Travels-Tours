@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BsChevronCompactLeft, BsChevronCompactRight } from "react-icons/bs";
 import { AiOutlineClose } from "react-icons/ai";
+import welcomeImg from "../images/welcomeImage.jpg";
 
 export default function DestinationDetails() {
   const { destSlug } = useParams();
@@ -127,11 +128,16 @@ export default function DestinationDetails() {
 
   useEffect(() => {
     const fetchDestinations = async () => {
+      if (!destSlug || destSlug === "undefined") {
+        setError(true);
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
-        const res = await fetch(`/api/destination/get-dest/?slug=${destSlug}`);
+        const res = await fetch(`/api/destination/get-dest?slug=${destSlug}`);
         const data = await res.json();
-        if (!res.ok) {
+        if (!res.ok || !data.destinations || data.destinations.length === 0) {
           setError(true);
           setLoading(false);
           return;
@@ -228,7 +234,7 @@ export default function DestinationDetails() {
               repeat: Infinity, 
               repeatType: "reverse" 
             }}
-            style={{ backgroundImage: `url(${destination?.destImage})` }}
+            style={{ backgroundImage: `url(${destination?.destImage || welcomeImg})` }}
             className="w-full h-full bg-center bg-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-transparent" />

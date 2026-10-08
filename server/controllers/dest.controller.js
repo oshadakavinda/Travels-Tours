@@ -84,9 +84,9 @@ export const getDestinations = async (req, res, next) => {
 
     // Fetch destinations based on query parameters
     const destinations = await Destination.find({
-      ...(req.query.userId && { userId: req.query.userId }),
-      ...(req.query.slug && { slug: req.query.slug }),
-      ...(req.query.destId && { _id: req.query.destId }),
+      ...(req.query.userId && req.query.userId !== "undefined" && { userId: req.query.userId }),
+      ...(req.query.slug && req.query.slug !== "undefined" && { slug: req.query.slug }),
+      ...(req.query.destId && req.query.destId !== "undefined" && { _id: req.query.destId }),
       ...(req.query.searchTerm && {
         $or: [
           { destinationName: { $regex: req.query.searchTerm, $options: "i" } },
@@ -130,9 +130,9 @@ export const getDestinationNames = async (req, res, next) => {
     const sortDirection = req.query.order === "asc" ? 1 : -1;
 
     const destinations = await Destination.find({
-      ...(req.query.userId && { userId: req.query.userId }),
-      ...(req.query.slug && { slug: req.query.slug }),
-      ...(req.query.destId && { _id: req.query.destId }),
+      ...(req.query.userId && req.query.userId !== "undefined" && { userId: req.query.userId }),
+      ...(req.query.slug && req.query.slug !== "undefined" && { slug: req.query.slug }),
+      ...(req.query.destId && req.query.destId !== "undefined" && { _id: req.query.destId }),
       ...(req.query.searchTerm && {
         $or: [
           { destinationName: { $regex: req.query.searchTerm, $options: "i" } },
